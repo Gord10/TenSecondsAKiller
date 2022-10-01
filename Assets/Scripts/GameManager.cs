@@ -1,17 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     public Scientist possessedScientist;
     public Transform exitDoor;
+    public int killAmountForGettingA = 10;
+
+    public enum State
+    {
+        IN_GAME,
+        END
+    }
+
+    private State state = State.IN_GAME;
 
     private GameUi gameUi;
     private Scientist[] scientists;
     private float possessCounter = 10;
     private int killedScientistAmount = 0;
     private int rescuedScientistAmount = 0;
+    private float timeWhenGameEnded = 0; //Uses Time.realtimeSinceStartup;
 
     private void Awake()
     {
@@ -19,7 +30,20 @@ public class GameManager : MonoBehaviour
         exitDoor = GameObject.FindGameObjectWithTag("Exit").transform;
         scientists = FindObjectsOfType<Scientist>();
 
+        SetState(State.IN_GAME);
         gameUi.UpdateKilledAndRescuedScientist(killedScientistAmount, rescuedScientistAmount);
+
+        int i;
+        for(i = 0; i < 13; i++)
+        {
+            print(GetGrade(i, killAmountForGettingA));
+        }
+    }
+
+    private void SetState(State newState)
+    {
+        state = newState;
+        gameUi.SetScreen(state);
     }
 
     // Start is called before the first frame update
@@ -31,11 +55,6 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.P))
-        {
-            PossessRandomScientist();
-        }
-
         possessCounter -= Time.deltaTime;
         if(possessCounter <= 0)
         {
@@ -43,6 +62,20 @@ public class GameManager : MonoBehaviour
         }
 
         gameUi.UpdateTimeCounter(possessCounter);
+
+        if(state == State.END)
+        {
+            if(Input.anyKeyDown && Time.realtimeSinceStartup - timeWhenGameEnded > 1)
+            {
+                RestartScene();
+            }
+        }
+    }
+
+    private void RestartScene()
+    {
+        string sceneName = SceneManager.GetActiveScene().name;
+        SceneManager.LoadScene(sceneName);
     }
 
     private void PossessRandomScientist()
@@ -89,11 +122,42 @@ public class GameManager : MonoBehaviour
     {
         rescuedScientistAmount++;
         gameUi.UpdateKilledAndRescuedScientist(killedScientistAmount, rescuedScientistAmount);
+        CheckIfGameEnded();
     }
 
     public void OnScientistKill()
     {
         killedScientistAmount++;
         gameUi.UpdateKilledAndRescuedScientist(killedScientistAmount, rescuedScientistAmount);
+        CheckIfGameEnded();
+    }
+
+    private void CheckIfGameEnded()
+    {
+        if(killedScientistAmount + rescuedScientistAmount >= scientists.Length -1)
+        {
+            SetState(State.END);
+            gameUi.UpdateEndGameText(killedScientistAmount, GetGrade(killedScientistAmount, killAmountForGettingA));
+            timeWhenGameEnded = Time.timeSinceLevelLoad;
+        }
+    }
+
+    public string GetGrade(int killAmount, int killAmountForA)
+    {
+        if(killAmount > killAmountForA)
+        {
+            return "A+";
+        }
+
+        char c = (char) ('A' - (killAmount - killAmountForA));
+
+        if(c > 'D')
+        {
+            return "F";
+        }
+
+        string text = "";
+        text += c;
+        return text;
     }
 }

@@ -6,7 +6,9 @@ using UnityEngine.AI;
 public class Scientist : MonoBehaviour
 {
     public float playerSpeed = 5f;
+    public Color possessedColor = Color.red;
     private NavMeshAgent navMeshAgent;
+    private SpriteRenderer spriteRenderer;
 
     public enum State
     {
@@ -25,32 +27,37 @@ public class Scientist : MonoBehaviour
     {
         rigidbody = GetComponent<Rigidbody2D>();
         navMeshAgent = GetComponent<NavMeshAgent>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
         navMeshAgent.updateRotation = false;
         navMeshAgent.updateUpAxis = false;
 
         gameManager = FindObjectOfType<GameManager>();
-
-        if(state == State.POSSESSED)
-        {
-            navMeshAgent.enabled = false;
-            gameManager.possessedScientist = this;
-        }
-
-        rigidbody.isKinematic = state == State.INNOCENT;
-
         desiredPlayerDirection = new();
+        GetUnpossessed();
+    }
+
+    public void GetPossessed()
+    {
+        navMeshAgent.enabled = false;
+        gameManager.possessedScientist = this;
+        rigidbody.isKinematic = false;
+        spriteRenderer.color = possessedColor;
+        state = State.POSSESSED;
+    }
+
+    public void GetUnpossessed()
+    {
+        navMeshAgent.enabled = true;
+        rigidbody.isKinematic = true;
+        spriteRenderer.color = Color.white;
+        state = State.INNOCENT;
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        if(state == State.INNOCENT)
-        {
-            Vector3 target = new();
-            Vector3 direction = gameManager.possessedScientist.transform.position - transform.position;
-            target = transform.position + direction.normalized;
-            navMeshAgent.SetDestination(target);
-        }
+
     }
 
     // Update is called once per frame
@@ -85,6 +92,29 @@ public class Scientist : MonoBehaviour
         if(state == State.POSSESSED)
         {
             rigidbody.velocity = desiredPlayerDirection * playerSpeed;
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Scientist scientist = collision.gameObject.GetComponent<Scientist>();
+        if(scientist)
+        {
+            if(scientist.state == State.POSSESSED)
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(state == State.INNOCENT)
+        {
+            if (collision.CompareTag("Exit"))
+            {
+                Destroy(gameObject);
+            }
         }
     }
 }

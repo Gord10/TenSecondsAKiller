@@ -25,6 +25,7 @@ public class Scientist : MonoBehaviour
     private GameManager gameManager;
     private GameCamera gameCamera;
     private Animator animator;
+    private new AudioSource audio;
 
     private void Awake()
     {
@@ -32,7 +33,10 @@ public class Scientist : MonoBehaviour
         navMeshAgent = GetComponent<NavMeshAgent>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
+        audio = GetComponent<AudioSource>();
+
         gameCamera = FindObjectOfType<GameCamera>();
+
 
         navMeshAgent.updateRotation = false;
         navMeshAgent.updateUpAxis = false;
@@ -141,6 +145,8 @@ public class Scientist : MonoBehaviour
                 state = State.DEAD;
                 rigidbody.isKinematic = true;
                 rigidbody.velocity = Vector2.zero;
+                audio.pitch = Random.Range(0.9f, 1.1f);
+                audio.Play();
                 //Destroy(gameObject);
             }
         }

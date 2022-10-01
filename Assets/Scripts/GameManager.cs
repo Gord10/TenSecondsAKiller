@@ -18,6 +18,7 @@ public class GameManager : MonoBehaviour
 
     private State state = State.IN_GAME;
 
+    private new AudioSource audio;
     private GameUi gameUi;
     private Scientist[] scientists;
     private float possessCounter = 10;
@@ -30,6 +31,8 @@ public class GameManager : MonoBehaviour
         gameUi = FindObjectOfType<GameUi>();
         ExitDoor = GameObject.FindGameObjectWithTag("Exit").transform;
         scientists = FindObjectsOfType<Scientist>();
+
+        audio = GetComponent<AudioSource>();
 
         SetState(State.IN_GAME);
         gameUi.UpdateKilledAndRescuedScientist(killedScientistAmount, rescuedScientistAmount);
@@ -87,6 +90,8 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
+
+        audio.Play();
 
         int index = Random.Range(0, scientists.Length);
 

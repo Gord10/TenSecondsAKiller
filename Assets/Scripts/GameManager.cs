@@ -7,19 +7,25 @@ public class GameManager : MonoBehaviour
     public Scientist possessedScientist;
     public Transform exitDoor;
 
+    private GameUi gameUi;
     private Scientist[] scientists;
+    private float possessCounter = 10;
+    private int killedScientistAmount = 0;
+    private int rescuedScientistAmount = 0;
 
     private void Awake()
     {
+        gameUi = FindObjectOfType<GameUi>();
         exitDoor = GameObject.FindGameObjectWithTag("Exit").transform;
         scientists = FindObjectsOfType<Scientist>();
-        
+
+        gameUi.UpdateKilledAndRescuedScientist(killedScientistAmount, rescuedScientistAmount);
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        PossessRandomScientist();
+        //PossessRandomScientist();
     }
 
     // Update is called once per frame
@@ -29,10 +35,20 @@ public class GameManager : MonoBehaviour
         {
             PossessRandomScientist();
         }
+
+        possessCounter -= Time.deltaTime;
+        if(possessCounter <= 0)
+        {
+            PossessRandomScientist();
+        }
+
+        gameUi.UpdateTimeCounter(possessCounter);
     }
 
     private void PossessRandomScientist()
     {
+        possessCounter = 10;
+
         if(!IsThereInnocentScientist())
         {
             return;
@@ -48,8 +64,6 @@ public class GameManager : MonoBehaviour
             }
             
             scientists[index].GetPossessed();
-            Camera.main.transform.SetParent(scientists[index].transform);
-            Camera.main.transform.localPosition = Vector3.back * 10;
         }
         else
         {
@@ -69,5 +83,17 @@ public class GameManager : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void OnScientistRescue()
+    {
+        rescuedScientistAmount++;
+        gameUi.UpdateKilledAndRescuedScientist(killedScientistAmount, rescuedScientistAmount);
+    }
+
+    public void OnScientistKill()
+    {
+        killedScientistAmount++;
+        gameUi.UpdateKilledAndRescuedScientist(killedScientistAmount, rescuedScientistAmount);
     }
 }

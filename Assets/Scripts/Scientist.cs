@@ -22,25 +22,36 @@ public class Scientist : MonoBehaviour
     private new Rigidbody2D rigidbody;
     private Vector2 desiredPlayerDirection;
     private GameManager gameManager;
+    private GameCamera gameCamera;
 
     private void Awake()
     {
         rigidbody = GetComponent<Rigidbody2D>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        gameCamera = FindObjectOfType<GameCamera>();
 
         navMeshAgent.updateRotation = false;
         navMeshAgent.updateUpAxis = false;
 
         gameManager = FindObjectOfType<GameManager>();
         desiredPlayerDirection = new();
-        GetUnpossessed();
+        
+        if(state == State.POSSESSED)
+        {
+            GetPossessed();
+        }
+        else
+        {
+            GetUnpossessed();
+        }
     }
 
     public void GetPossessed()
     {
         navMeshAgent.enabled = false;
         gameManager.possessedScientist = this;
+        gameCamera.GetAttachedToScientist(this);
         rigidbody.isKinematic = false;
         spriteRenderer.color = possessedColor;
         state = State.POSSESSED;
@@ -95,24 +106,26 @@ public class Scientist : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionStay2D(Collision2D collision)
     {
         Scientist scientist = collision.gameObject.GetComponent<Scientist>();
         if(scientist)
         {
             if(scientist.state == State.POSSESSED)
             {
+                gameManager.OnScientistKill();
                 Destroy(gameObject);
             }
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerStay2D(Collider2D collision)
     {
         if(state == State.INNOCENT)
         {
             if (collision.CompareTag("Exit"))
             {
+                gameManager.OnScientistRescue();
                 Destroy(gameObject);
             }
         }

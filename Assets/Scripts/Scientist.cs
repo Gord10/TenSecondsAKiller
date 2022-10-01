@@ -23,12 +23,14 @@ public class Scientist : MonoBehaviour
     private Vector2 desiredPlayerDirection;
     private GameManager gameManager;
     private GameCamera gameCamera;
+    private Animator animator;
 
     private void Awake()
     {
         rigidbody = GetComponent<Rigidbody2D>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
         gameCamera = FindObjectOfType<GameCamera>();
 
         navMeshAgent.updateRotation = false;
@@ -63,6 +65,7 @@ public class Scientist : MonoBehaviour
         rigidbody.isKinematic = true;
         spriteRenderer.color = Color.white;
         state = State.INNOCENT;
+        animator.SetBool("running", true);
     }
 
     // Start is called before the first frame update
@@ -85,6 +88,7 @@ public class Scientist : MonoBehaviour
                 spriteRenderer.flipX = desiredPlayerDirection.x > 0;
             }
 
+            animator.SetBool("running", Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0);
         }
         else if(state == State.INNOCENT)
         {

@@ -103,6 +103,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerSpeed: 9
   possessedColor: {r: 1, g: 1, b: 1, a: 1}
+  deadSprite: {fileID: 21300000, guid: 20e590eaad856b744a165df83db3074e, type: 3}
   state: 1
 --- !u!50 &6970527697530018487
 Rigidbody2D:

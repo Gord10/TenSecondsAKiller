@@ -9,6 +9,7 @@ public class Scientist : MonoBehaviour
     public Color possessedColor = Color.red;
     private NavMeshAgent navMeshAgent;
     private SpriteRenderer spriteRenderer;
+    public Sprite deadSprite;
 
     public enum State
     {
@@ -122,13 +123,25 @@ public class Scientist : MonoBehaviour
 
     private void OnCollisionStay2D(Collision2D collision)
     {
+        if(state == State.DEAD)
+        {
+            return;
+        }
+
         Scientist scientist = collision.gameObject.GetComponent<Scientist>();
         if(scientist)
         {
             if(scientist.state == State.POSSESSED)
             {
                 gameManager.OnScientistKill();
-                Destroy(gameObject);
+                animator.enabled = false;
+                spriteRenderer.sprite = deadSprite;
+                GetComponent<Collider2D>().enabled = false;
+                navMeshAgent.isStopped = true;
+                state = State.DEAD;
+                rigidbody.isKinematic = true;
+                rigidbody.velocity = Vector2.zero;
+                //Destroy(gameObject);
             }
         }
     }

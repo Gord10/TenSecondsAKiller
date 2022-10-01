@@ -57,6 +57,7 @@ public class Scientist : MonoBehaviour
         rigidbody.isKinematic = false;
         spriteRenderer.color = possessedColor;
         state = State.POSSESSED;
+        animator.SetBool("demon", true);
     }
 
     public void GetUnpossessed()
@@ -66,6 +67,7 @@ public class Scientist : MonoBehaviour
         spriteRenderer.color = Color.white;
         state = State.INNOCENT;
         animator.SetBool("running", true);
+        animator.SetBool("demon", false);
     }
 
     // Start is called before the first frame update

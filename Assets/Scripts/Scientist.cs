@@ -5,6 +5,16 @@ using UnityEngine;
 public class Scientist : MonoBehaviour
 {
     public float playerSpeed = 5f;
+
+    public enum State
+    {
+        POSSESSED,
+        RUNNING_FROM_DEMON,
+        DEAD
+    }
+
+    public State state = State.RUNNING_FROM_DEMON;
+
     private new Rigidbody2D rigidbody;
     private Vector2 desiredPlayerDirection;
 
@@ -23,13 +33,20 @@ public class Scientist : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        desiredPlayerDirection.x = Input.GetAxis("Horizontal");
-        desiredPlayerDirection.y = Input.GetAxis("Vertical");
-        desiredPlayerDirection = Vector2.ClampMagnitude(desiredPlayerDirection, 1f);
+        if(state == State.POSSESSED)
+        {
+            desiredPlayerDirection.x = Input.GetAxis("Horizontal");
+            desiredPlayerDirection.y = Input.GetAxis("Vertical");
+            desiredPlayerDirection = Vector2.ClampMagnitude(desiredPlayerDirection, 1f);
+        }
+
     }
 
     private void FixedUpdate()
     {
-        rigidbody.velocity = desiredPlayerDirection * playerSpeed;
+        if(state == State.POSSESSED)
+        {
+            rigidbody.velocity = desiredPlayerDirection * playerSpeed;
+        }
     }
 }

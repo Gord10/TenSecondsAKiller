@@ -11,11 +11,11 @@ public class Scientist : MonoBehaviour
     public enum State
     {
         POSSESSED,
-        RUNNING_FROM_DEMON,
+        INNOCENT,
         DEAD
     }
 
-    public State state = State.RUNNING_FROM_DEMON;
+    public State state = State.INNOCENT;
 
     private new Rigidbody2D rigidbody;
     private Vector2 desiredPlayerDirection;
@@ -34,10 +34,9 @@ public class Scientist : MonoBehaviour
         {
             navMeshAgent.enabled = false;
             gameManager.possessedScientist = this;
-            
         }
 
-        rigidbody.isKinematic = state == State.RUNNING_FROM_DEMON;
+        rigidbody.isKinematic = state == State.INNOCENT;
 
         desiredPlayerDirection = new();
     }
@@ -45,7 +44,7 @@ public class Scientist : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if(state == State.RUNNING_FROM_DEMON)
+        if(state == State.INNOCENT)
         {
             Vector3 target = new();
             Vector3 direction = gameManager.possessedScientist.transform.position - transform.position;
@@ -63,14 +62,22 @@ public class Scientist : MonoBehaviour
             desiredPlayerDirection.y = Input.GetAxis("Vertical");
             desiredPlayerDirection = Vector2.ClampMagnitude(desiredPlayerDirection, 1f);
         }
-        else
+        else if(state == State.INNOCENT)
         {
             Vector3 target = new();
-            Vector3 direction = transform.position - gameManager.possessedScientist.transform.position;
-            target = transform.position + direction.normalized;
-            navMeshAgent.SetDestination(target);
-        }
+            Vector3 diffFromPlayer = transform.position - gameManager.possessedScientist.transform.position;
+            Vector2 diffFromExit = gameManager.exitDoor.position - transform.position;
 
+            if(diffFromExit.sqrMagnitude > diffFromPlayer.sqrMagnitude)
+            {
+                target = transform.position + diffFromPlayer.normalized;
+                navMeshAgent.SetDestination(target);
+            }
+            else
+            {
+                navMeshAgent.SetDestination(gameManager.exitDoor.position);
+            }
+        }
     }
 
     private void FixedUpdate()

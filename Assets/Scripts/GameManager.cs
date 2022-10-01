@@ -5,8 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    [HideInInspector]
     public Scientist possessedScientist;
-    public Transform exitDoor;
+    public Transform ExitDoor { get; private set; }
     public int killAmountForGettingA = 10;
 
     public enum State
@@ -27,7 +28,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         gameUi = FindObjectOfType<GameUi>();
-        exitDoor = GameObject.FindGameObjectWithTag("Exit").transform;
+        ExitDoor = GameObject.FindGameObjectWithTag("Exit").transform;
         scientists = FindObjectsOfType<Scientist>();
 
         SetState(State.IN_GAME);

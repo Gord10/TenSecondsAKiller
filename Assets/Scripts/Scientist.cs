@@ -49,8 +49,8 @@ public class Scientist : MonoBehaviour
 
     public void GetPossessed()
     {
-        navMeshAgent.enabled = false;
         gameManager.possessedScientist = this;
+        navMeshAgent.enabled = false;
         gameCamera.GetAttachedToScientist(this);
         rigidbody.isKinematic = false;
         spriteRenderer.color = possessedColor;
@@ -79,21 +79,29 @@ public class Scientist : MonoBehaviour
             desiredPlayerDirection.x = Input.GetAxis("Horizontal");
             desiredPlayerDirection.y = Input.GetAxis("Vertical");
             desiredPlayerDirection = Vector2.ClampMagnitude(desiredPlayerDirection, 1f);
+
+            if(desiredPlayerDirection.x != 0)
+            {
+                spriteRenderer.flipX = desiredPlayerDirection.x > 0;
+            }
+
         }
         else if(state == State.INNOCENT)
         {
             Vector3 target = new();
             Vector3 diffFromPlayer = transform.position - gameManager.possessedScientist.transform.position;
-            Vector2 diffFromExit = gameManager.exitDoor.position - transform.position;
+            Vector2 diffFromExit = gameManager.ExitDoor.position - transform.position;
 
             if(diffFromExit.sqrMagnitude > diffFromPlayer.sqrMagnitude)
             {
-                target = transform.position + diffFromPlayer.normalized;
+                target = transform.position + diffFromPlayer.normalized * 3;
                 navMeshAgent.SetDestination(target);
+                spriteRenderer.flipX = diffFromPlayer.x > 0;
             }
             else
             {
-                navMeshAgent.SetDestination(gameManager.exitDoor.position);
+                navMeshAgent.SetDestination(gameManager.ExitDoor.position);
+                spriteRenderer.flipX = diffFromExit.x > 0;
             }
         }
     }

@@ -6,12 +6,11 @@ using UnityEngine.AI;
 public class Scientist : MonoBehaviour
 {
     public float playerSpeed = 5f;
-    public Color possessedColor = Color.red;
     public Sprite deadSprite;
 
     private NavMeshAgent navMeshAgent;
     private SpriteRenderer spriteRenderer;
-    private ParticleSystem particleSystem;
+    private new ParticleSystem particleSystem;
     
     public enum State
     {
@@ -40,7 +39,6 @@ public class Scientist : MonoBehaviour
 
         gameCamera = FindObjectOfType<GameCamera>();
 
-
         navMeshAgent.updateRotation = false;
         navMeshAgent.updateUpAxis = false;
 
@@ -63,7 +61,6 @@ public class Scientist : MonoBehaviour
         navMeshAgent.enabled = false;
         gameCamera.GetAttachedToScientist(this);
         rigidbody.isKinematic = false;
-        spriteRenderer.color = possessedColor;
         state = State.POSSESSED;
         animator.SetBool("demon", true);
     }
@@ -72,7 +69,6 @@ public class Scientist : MonoBehaviour
     {
         navMeshAgent.enabled = true;
         rigidbody.isKinematic = true;
-        spriteRenderer.color = Color.white;
         state = State.INNOCENT;
         animator.SetBool("running", true);
         animator.SetBool("demon", false);
@@ -87,7 +83,7 @@ public class Scientist : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(state == State.POSSESSED)
+        if(state == State.POSSESSED) //This is the player "scientist". We will read the input.
         {
             desiredPlayerDirection.x = Input.GetAxis("Horizontal");
             desiredPlayerDirection.y = Input.GetAxis("Vertical");
@@ -98,26 +94,29 @@ public class Scientist : MonoBehaviour
                 spriteRenderer.flipX = desiredPlayerDirection.x > 0;
             }
 
+            //Running animation will play as long as horizontal or vertical keys are pressed
             animator.SetBool("running", Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0);
         }
-        else if(state == State.INNOCENT)
+        else if(state == State.INNOCENT) //Scientist AI will run either to the exit door or from the player, depending on the distances between them
         {
             Vector3 target = new();
             Vector3 diffFromPlayer = transform.position - gameManager.possessedScientist.transform.position;
             Vector2 diffFromExit = gameManager.ExitDoor.position - transform.position;
 
-            if(diffFromExit.sqrMagnitude > diffFromPlayer.sqrMagnitude)
+            if(diffFromExit.sqrMagnitude > diffFromPlayer.sqrMagnitude) //Escape from player
             {
+                //We will set the target position of the nav mesh as the opposite direction of player
                 target = transform.position + diffFromPlayer.normalized * 3;
                 navMeshAgent.SetDestination(target);
                 spriteRenderer.flipX = diffFromPlayer.x > 0;
             }
-            else
+            else //Run to the exit
             {
                 navMeshAgent.SetDestination(gameManager.ExitDoor.position);
                 spriteRenderer.flipX = diffFromExit.x > 0;
             }
 
+            //Play crouching animation if the scientist has been cornered
             animator.SetBool("running", navMeshAgent.remainingDistance > 0.1f);
         }
     }
@@ -137,33 +136,44 @@ public class Scientist : MonoBehaviour
             return;
         }
 
-        Scientist scientist = collision.gameObject.GetComponent<Scientist>();
-        if(scientist)
+        Scientist otherScientist = collision.gameObject.GetComponent<Scientist>();
+        if(otherScientist) //Scientist touched another scientist
         {
-            if(scientist.state == State.POSSESSED)
+            if(otherScientist.state == State.POSSESSED) //Innocent scientist has touched the demon, so he will die
             {
-                gameManager.OnScientistKill();
-                animator.enabled = false;
-                spriteRenderer.sprite = deadSprite;
-                GetComponent<Collider2D>().enabled = false;
-                navMeshAgent.isStopped = true;
-                Destroy(navMeshAgent);
-                state = State.DEAD;
-                rigidbody.isKinematic = true;
-                rigidbody.velocity = Vector2.zero;
-                audio.pitch = Random.Range(0.9f, 1.1f);
-                audio.Play();
-                particleSystem.Play();
-                //Destroy(gameObject);
+                Die();
             }
         }
+    }
+
+    private void Die()
+    {
+        gameManager.OnScientistKill();
+        animator.enabled = false;
+        spriteRenderer.sprite = deadSprite;
+        GetComponent<Collider2D>().enabled = false;
+
+        //We don't need nav mesh agent anymore, because scientist has died
+        navMeshAgent.isStopped = true;
+        Destroy(navMeshAgent);
+
+        state = State.DEAD;
+        rigidbody.isKinematic = true;
+        rigidbody.velocity = Vector2.zero;
+
+        //Play sound with a randomized pitch
+        audio.pitch = Random.Range(0.9f, 1.1f);
+        audio.Play();
+
+        //Play blood particle effect
+        particleSystem.Play();
     }
 
     private void OnTriggerStay2D(Collider2D collision)
     {
         if(state == State.INNOCENT)
         {
-            if (collision.CompareTag("Exit"))
+            if (collision.CompareTag("Exit")) //AI scientist has reached the exit area 
             {
                 gameManager.OnScientistRescue();
                 Destroy(gameObject);

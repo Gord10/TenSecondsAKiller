@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public Scientist possessedScientist;
     public Transform ExitDoor { get; private set; }
-    public int killAmountForGettingA = 10;
+    public int killAmountForGettingA = 10; //Player will get A grade if they kill this amount of scientists
 
     public enum State
     {
@@ -41,11 +41,12 @@ public class GameManager : MonoBehaviour
         SetState(State.IN_GAME);
         gameUi.UpdateKilledAndRescuedScientist(killedScientistAmount, rescuedScientistAmount);
 
+        /*
         int i;
         for(i = 0; i < 13; i++)
         {
             print(GetGrade(i, killAmountForGettingA));
-        }
+        }*/
     }
 
     private void SetState(State newState)
@@ -54,26 +55,24 @@ public class GameManager : MonoBehaviour
         gameUi.SetScreen(state);
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        //PossessRandomScientist();
-    }
-
     // Update is called once per frame
     void Update()
     {
+        //Possess a random scientist if the possessCounter reaches 0
         possessCounter -= Time.deltaTime;
         if(possessCounter <= 0)
         {
             PossessRandomScientist();
         }
 
+        //Show time on UI
         gameUi.UpdateTimeCounter(possessCounter);
 
         if(state == State.END)
         {
-            if(Input.anyKeyDown && Time.realtimeSinceStartup - timeWhenGameEnded > 1)
+            float timeThreshold = 1f;
+            //Restart the game if the player has pressed any key after timeThreshold seconds
+            if (Input.anyKeyDown && Time.realtimeSinceStartup - timeWhenGameEnded > timeThreshold)
             {
                 RestartScene();
             }
@@ -88,18 +87,19 @@ public class GameManager : MonoBehaviour
 
     private void PossessRandomScientist()
     {
-        possessCounter = 10;
+        possessCounter = 10; //Reset the counter
 
-        if(!IsThereInnocentScientist())
+        if(!IsThereInnocentScientist()) //There is no scientist to possess, so return the function
         {
             return;
         }
 
         audio.Play();
 
-        int index = Random.Range(0, scientists.Length);
+        //Find a random scientist and possess him
+        int index = Random.Range(0, scientists.Length); 
 
-        if(scientists[index] != null && scientists[index].state == Scientist.State.INNOCENT)
+        if(scientists[index] != null && scientists[index].state == Scientist.State.INNOCENT) //Check if the scientist exists, he is innocent and alive
         {
             if(possessedScientist)
             {
@@ -108,12 +108,13 @@ public class GameManager : MonoBehaviour
             
             scientists[index].GetPossessed();
         }
-        else
+        else //The found scientist is not available for possession, possess another one
         {
             PossessRandomScientist();
         }
     }
 
+    //Check is there is a scientist who is alive and innocent
     private bool IsThereInnocentScientist()
     {
         int i;
@@ -145,7 +146,7 @@ public class GameManager : MonoBehaviour
 
     private void CheckIfGameEnded()
     {
-        if(killedScientistAmount + rescuedScientistAmount >= scientists.Length -1)
+        if(killedScientistAmount + rescuedScientistAmount >= scientists.Length -1) //End game, because all scientists are either rescued or killed
         {
             SetState(State.END);
             gameUi.UpdateEndGameText(killedScientistAmount, GetGrade(killedScientistAmount, killAmountForGettingA));
@@ -160,7 +161,7 @@ public class GameManager : MonoBehaviour
             return "A+";
         }
 
-        char c = (char) ('A' - (killAmount - killAmountForA));
+        char c = (char) ('A' + (killAmountForA - killAmount));
 
         if(c > 'D')
         {

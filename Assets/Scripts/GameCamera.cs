@@ -11,6 +11,8 @@ public class GameCamera : MonoBehaviour
     {
         transform.DOKill();
         transform.SetParent(scientist.transform);
+
+        //Start moving to the scientist
         transform.DOLocalMove(new Vector3(0, 0, -10), movementTime);
     }
 }

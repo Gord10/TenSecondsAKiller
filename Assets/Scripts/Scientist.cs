@@ -7,10 +7,12 @@ public class Scientist : MonoBehaviour
 {
     public float playerSpeed = 5f;
     public Color possessedColor = Color.red;
-    private NavMeshAgent navMeshAgent;
-    private SpriteRenderer spriteRenderer;
     public Sprite deadSprite;
 
+    private NavMeshAgent navMeshAgent;
+    private SpriteRenderer spriteRenderer;
+    private ParticleSystem particleSystem;
+    
     public enum State
     {
         POSSESSED,
@@ -34,6 +36,7 @@ public class Scientist : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         audio = GetComponent<AudioSource>();
+        particleSystem = GetComponentInChildren<ParticleSystem>();
 
         gameCamera = FindObjectOfType<GameCamera>();
 
@@ -114,6 +117,8 @@ public class Scientist : MonoBehaviour
                 navMeshAgent.SetDestination(gameManager.ExitDoor.position);
                 spriteRenderer.flipX = diffFromExit.x > 0;
             }
+
+            animator.SetBool("running", navMeshAgent.remainingDistance > 0.1f);
         }
     }
 
@@ -142,11 +147,13 @@ public class Scientist : MonoBehaviour
                 spriteRenderer.sprite = deadSprite;
                 GetComponent<Collider2D>().enabled = false;
                 navMeshAgent.isStopped = true;
+                Destroy(navMeshAgent);
                 state = State.DEAD;
                 rigidbody.isKinematic = true;
                 rigidbody.velocity = Vector2.zero;
                 audio.pitch = Random.Range(0.9f, 1.1f);
                 audio.Play();
+                particleSystem.Play();
                 //Destroy(gameObject);
             }
         }

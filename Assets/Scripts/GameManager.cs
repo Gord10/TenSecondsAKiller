@@ -21,16 +21,20 @@ public class GameManager : MonoBehaviour
     private new AudioSource audio;
     private GameUi gameUi;
     private Scientist[] scientists;
+    private CameraShake cameraShake;
+
     private float possessCounter = 10;
     private int killedScientistAmount = 0;
     private int rescuedScientistAmount = 0;
     private float timeWhenGameEnded = 0; //Uses Time.realtimeSinceStartup;
+
 
     private void Awake()
     {
         gameUi = FindObjectOfType<GameUi>();
         ExitDoor = GameObject.FindGameObjectWithTag("Exit").transform;
         scientists = FindObjectsOfType<Scientist>();
+        cameraShake = FindObjectOfType<CameraShake>();
 
         audio = GetComponent<AudioSource>();
 
@@ -133,6 +137,7 @@ public class GameManager : MonoBehaviour
 
     public void OnScientistKill()
     {
+        cameraShake.Shake();
         killedScientistAmount++;
         gameUi.UpdateKilledAndRescuedScientist(killedScientistAmount, rescuedScientistAmount);
         CheckIfGameEnded();

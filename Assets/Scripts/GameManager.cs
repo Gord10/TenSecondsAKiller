@@ -58,6 +58,13 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+#if UNITY_STANDALONE
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
+#endif
+
         //Possess a random scientist if the possessCounter reaches 0
         possessCounter -= Time.deltaTime;
         if(possessCounter <= 0)

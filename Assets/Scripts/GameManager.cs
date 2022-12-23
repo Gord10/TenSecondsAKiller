@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -79,7 +79,7 @@ public class GameManager : MonoBehaviour
         {
             float timeThreshold = 1f;
             //Restart the game if the player has pressed any key after timeThreshold seconds
-            if (Input.anyKeyDown && Time.realtimeSinceStartup - timeWhenGameEnded > timeThreshold)
+            if ((Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton0)) && Time.realtimeSinceStartup - timeWhenGameEnded > timeThreshold)
             {
                 RestartScene();
             }
@@ -158,6 +158,7 @@ public class GameManager : MonoBehaviour
             SetState(State.END);
             gameUi.UpdateEndGameText(killedScientistAmount, GetGrade(killedScientistAmount, killAmountForGettingA));
             timeWhenGameEnded = Time.timeSinceLevelLoad;
+            possessedScientist.StopMovement();
         }
     }
 
@@ -178,5 +179,10 @@ public class GameManager : MonoBehaviour
         string text = "";
         text += c;
         return text;
+    }
+
+    public bool IsInGame()
+    {
+        return state == State.IN_GAME;
     }
 }

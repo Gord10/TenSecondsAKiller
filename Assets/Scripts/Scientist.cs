@@ -83,7 +83,7 @@ public class Scientist : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(state == State.POSSESSED) //This is the player "scientist". We will read the input.
+        if(state == State.POSSESSED && gameManager.IsInGame()) //This is the player "scientist". We will read the input.
         {
             desiredPlayerDirection.x = Input.GetAxis("Horizontal");
             desiredPlayerDirection.y = Input.GetAxis("Vertical");
@@ -121,11 +121,24 @@ public class Scientist : MonoBehaviour
         }
     }
 
+    public void StopMovement()
+    {
+        rigidbody.velocity = Vector2.zero;
+        animator.SetBool("running", false);
+    }
+
     private void FixedUpdate()
     {
         if(state == State.POSSESSED)
         {
-            rigidbody.velocity = desiredPlayerDirection * playerSpeed;
+            if(gameManager.IsInGame())
+            {
+                rigidbody.velocity = desiredPlayerDirection * playerSpeed;
+            }
+            else
+            {
+                rigidbody.velocity = Vector2.zero;
+            }
         }
     }
 
